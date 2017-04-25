@@ -1,26 +1,6 @@
 
 
-
-library(leaflet)
-library(RColorBrewer)
-library(plyr)
-library(htmlwidgets)
-library(htmltools)
-library(leaflet.extras)
-library(rgdal)
-library(sf)
-library(sp)
-library(spatialEco)
-library(rgeos)
-library(ggplot2)
-library(data.table)
-library(dplyr)
-library(plotly)
-library(webshot)
-library(colorspace)
-library(geosphere)
-
-#install (http://phantomjs.org)
+source("code/0-packages.R")
 
 
 #setwd("D:/R/")
