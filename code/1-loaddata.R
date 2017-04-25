@@ -35,9 +35,9 @@ load2<-paste0(dir, file2)
 load3<-paste0(dir, file3)
 
 
-df<-read.csv(load1)
-df2<-read.csv(load2)
-df3<-read.csv(load3)
+df<-read.csv("data/atmTrans.CSV")
+df2<-read.csv("data/HFDV.CSV")
+df3<-read.csv("data/Transactions.CSV")
 
 shapearea <- st_read('data/admin1.shp')
 plot(shapearea) 
@@ -184,7 +184,7 @@ saveWidget(plot1, file = "out/plot1.html", selfcontained = TRUE)
 my_breaks = c(1,10,100,1000,10000)
 
 
-HEXp1<- ggplot(A, aes(x = (actual_Distance/1000), y = (Nearest_Dist/1000)) )+  stat_binhex(aes(fill=..count..), bins=40)+ 
+HEXP1<- ggplot(A, aes(x = (actual_Distance/1000), y = (Nearest_Dist/1000)) )+  stat_binhex(aes(fill=..count..), bins=40)+ 
   
   scale_fill_gradient(name = "count", trans = "log", breaks = my_breaks, labels = my_breaks) +
   labs(
