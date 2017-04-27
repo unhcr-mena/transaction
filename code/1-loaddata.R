@@ -6,13 +6,13 @@ source("code/0-packages.R")
 #setwd("D:/R/")
 #getwd()
 
-file1<-"data/atmTrans.CSV"
-file2<-"data/HFDV.CSV"
-file3<-"data/Transactions.CSV"
+#file1<-"data/atmTrans.CSV"
+#file2<-"data/HFDV.CSV"
+#file3<-"data/Transactions.CSV"
 
-load1<-paste0(dir, file1)
-load2<-paste0(dir, file2)
-load3<-paste0(dir, file3)
+#load1<-paste0(dir, file1)
+#load2<-paste0(dir, file2)
+#load3<-paste0(dir, file3)
 
 
 df<-read.csv("data/atmTrans.CSV")
@@ -74,7 +74,7 @@ wgs84<-CRS("+proj=longlat +zone=37 +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0
 ####nearest ATM
 
 df.coords <- data.frame  (df$Lat, df$Long, df$Address)
-df.bc<-SpatialPointsDataFrame(data.frame(x=df.coords$df.Long,y =df.coords$df.Lat),data=data.frame(ID=1:108, address=df$Address), proj4string = wgs84)
+df.bc<-SpatialPointsDataFrame(data.frame(x=df.coords$df.Long,y =df.coords$df.Lat),data=data.frame(ID=1:108, Address=df$Address), proj4string = wgs84)
 df.bc.Proj<-spTransform(df.bc,utm10n)
 
 
@@ -122,14 +122,27 @@ d<-(round(A$actual_Distance,3)-round(A$Nearest_Dist,3))
 Gov <-(data.frame(aggregate(A$Nearest_Dist/1000, by=list(A$District), FUN=mean)))
 Gov$max  <-aggregate(A$Nearest_Dist, by=list(A$District), FUN=max)
 
+
+
+
+CountTrans1<- sqldf("SELECT LocalIP AS ATMIP, COUNT(DISTINCT TransNo) AS TransCount FROM A GROUP BY LocalIP")
+CountTrans2<-merge(CountTrans1, df, by = "ATMIP")
+
+for (i in 1:dim(CountTrans2)[1]){ #will use every line of the attribute table
+  pie(CountTrans2$TransCount, init.angle = 90, col=c("red", "yellow"), labels=NA) #this will create the pie chart itself with five collors as we have five columns
+  dev.off()
+}
+
+
+
 pal <- colorNumeric(
   palette = "Greens",
   domain = Gov$x
 )
 
 pal2 <- colorNumeric(
-  palette = "YlGn",
-  domain = Gov$min.x
+  palette = "RdYlBu",
+  domain = CountTrans2$TransCount
 )
 
 
@@ -704,7 +717,7 @@ map1<-leaflet()%>%addTiles(urlTemplate = "http://{s}.tile.openstreetmap.org/{z}/
                                                                       '</br> District: ', District12$District,
                                                                       '</br> ATM IP: ', District12$ATMIP),  group ="Jarash") %>%
   
-  
+
 
 addPolygons(data=District1, color ='black',  fillColor="palegreen", label=~adm1_name, fillOpacity=0.02, weight=1.5, group="Amman") %>%
 addPolygons(data=District2, color ='black',fillColor="palegreen", label=~adm1_name, fillOpacity=0.07,  weight=1.5,group="Irbid") %>%
@@ -757,6 +770,47 @@ map2
 saveWidget(map2, file = "map2.html", selfcontained = TRUE)
 
 ########################### map 3 ############################################
+
+
+map3<-leaflet()%>%addTiles(urlTemplate = "http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png")%>%setView(36.541, 31.410, zoom = 8) %>%  
+  addCircleMarkers(data=CountTrans2,lng = ~Long, lat = ~Lat,  color ='black', fillColor=~pal2(CountTrans2$TransCount),   popup= paste('ATM Name: ', CountTrans2$ATMPlace, 
+                                                                                                                                            '</br> ATM Address: ', CountTrans2$Address,
+                                                                                                                                     '</br> District: ', CountTrans2$District,
+                                                                                                                                            '</br> ATM IP: ', CountTrans2$ATMIP,
+                                                                                                                                            '</br> Number of Transactions: ', CountTrans2$TransCount)  , fillOpacity=0.7, weight=0, radius=CountTrans2$TransCount/50 , labelOptions = labelOptions(noHide = T , direction='center', textOnly = T)) %>%
+  addLegend("bottomright", pal = pal2, values = CountTrans2$TransCount, bins=3,
+            title = "Actual Distance</br>Mean",
+            labFormat = labelFormat(suffix = " Trans", digits=3),
+            opacity = 1)
+
+pie(c(0,1,2,3), init.angle = 90, col=c("red"), labels=NA) 
+
+map3
+
+mapPies( CountTrans2,nameX=~Long, nameY=~Lat, nameZs=c(names(CountTrans2)[2], names(CountTrans2)[2]),mapRegion='asia', oceanCol = "lightseagreen",
+         landCol = "gray50")
+
+
+
+
+map2<-leaflet()%>%addTiles()%>%setView(36.541, 31.410, zoom = 8) %>%  
+  
+  addCircleMarkers(data=mergedf, weight = 0, lng = ~Long, lat = ~Lat, radius = (mergedf$TransCount), fillOpacity = 0.5, label = mergedf$TransCount, color = ~pal(mergedf$TransCount),  popup = mergedf$TransCount) %>% 
+  
+  addLegend("bottomleft", pal = pal, values=sort(mergedf$TransCount), title = "Avg.Ratings",labFormat = labelFormat(prefix = ""), opacity = 0.5)
+
+map2
+
+
+
+
+
+
+
+
+########################### map 3 ############################################
+
+
 
 map3<-leaflet()%>%addTiles(urlTemplate = "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")%>%setView(36.541, 31.410, zoom = 8) %>%  
   
