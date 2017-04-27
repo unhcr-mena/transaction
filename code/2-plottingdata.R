@@ -7,17 +7,16 @@ pal <- colorNumeric(
 )
 
 pal2 <- colorNumeric(
-  palette = "YlGn",
-  domain = Gov$min.x
+  palette = "RdYlBu",
+  domain = CountTrans2$TransCount
 )
-
 
 ######################################## Distance to the nearest ATM vs actual ATM withdrawal plot ##################################################
 
 p1<- ggplot(A, aes(x = (actual_Distance/1000), y = (Nearest_Dist/1000), colour=(DIFf/1000)))  +geom_point(aes(text = paste('CaseNumber: ', CaseNo, 
                                                                                                                            '</br> Difference(km): ', round(DIFf/1000,2),
-                                                                                                                           '</br> Nearest ATM: ', address,
-                                                                                                                           '</br> Actual ATM: ', Address,
+                                                                                                                           '</br> Nearest ATM: ', A$Address.y,
+                                                                                                                           '</br> Actual ATM: ', A$Address.x,
                                                                                                                            '</br> HVF: ', Form.x,
                                                                                                                            '</br> HVD: ', HVD.x))) + 
   labs(
@@ -315,7 +314,7 @@ saveWidget(HexPlotJarash, file = "HexPlotJarash.html", selfcontained = TRUE)
 #mean value for Facet:
 
 HlineFacet <- data.frame(District = Gov$Group.1, Mean = Gov$x)
-A<-merge(x= HlineFacet, y= A,  by="District")
+A<-merge(HlineFacet, A,  by="District")
 #HlineFacet$X<- sub("'","",HlineFacet$X)
 
 
@@ -375,8 +374,8 @@ plot_labeller <- function(variable,value){
 
 p3<- ggplot(A, aes(x = (actual_Distance/1000), y = (Nearest_Dist/1000), colour=(DIFf/1000) )) + geom_point(aes(text = paste('CaseNumber: ', CaseNo, 
                                                                                                                             '</br> Difference(km): ', round(DIFf/1000,2),
-                                                                                                                            '</br> Nearest ATM: ', address,
-                                                                                                                            '</br> Actual ATM: ', Address,
+                                                                                                                            '</br> Nearest ATM: ', A$Address.y,
+                                                                                                                            '</br> Actual ATM: ', A$Address.x,
                                                                                                                             '</br> HVF: ', Form.x,
                                                                                                                             '</br> HVD: ', HVD.x))) + 
   
@@ -507,8 +506,8 @@ pop1<-paste0("<b>Distance</b>: ",round(df2.con$Nearest_Con,2),"<br><b>Nearest AT
 
 pop3<-paste('CaseNumber: ', A$CaseNo, 
             '</br> Difference(km): ', round(A$DIFf/1000,2),
-            '</br> Nearest ATM: ', A$address,
-            '</br> Actual ATM: ', A$Address,
+            '</br> Nearest ATM: ', A$Address.y,
+            '</br> Actual ATM: ', A$Address.x,
             '</br> HVF: ', A$Form.x,
             '</br> HVD: ', A$HVD.x)
 
@@ -616,17 +615,15 @@ map2<-leaflet()%>%addTiles(urlTemplate = "http://{s}.tile.openstreetmap.org/{z}/
   
   addCircleMarkers(data=A, radius= 2, color='blue', opacity= 100, lng = ~Long, lat = ~Lat, popup = paste('CaseNumber: ', A$CaseNo, 
                                                                                                          '</br> Difference(km): ', round(A$DIFf/1000,2),
-                                                                                                         '</br> Nearest ATM: ', A$address,
-                                                                                                         '</br> Actual ATM: ', A$Address,
+                                                                                                         '</br> Nearest ATM: ', A$Address.y,
+                                                                                                         '</br> Actual ATM: ', A$Address.x,
                                                                                                          '</br> HVF: ', A$Form.x,
                                                                                                          '</br> HVD: ', A$HVD.x) )%>%
   
   addCircleMarkers(data=df_area.points, radius= 2, color='black', opacity= 100, lng = ~Long, lat = ~Lat, popup = paste('ATM Name: ', df_area.points$ATMPlace, 
                                                                                                                        '</br> ATM Address: ', df_area.points$Address,
                                                                                                                        '</br> District: ', df_area.points$District,
-                                                                                                                       '</br> ATM IP: ', df_area.points$ATMIP) )%>%  
-  
-  addPolygons(color = heat.colors(NLEV, NULL)[LEVS])
+                                                                                                                       '</br> ATM IP: ', df_area.points$ATMIP) )
 
 
 #addMarkers(data=A, lng = ~Long, lat = ~Lat, group ='all',label=~CaseNo,  options=markerOptions(opacity=0)) %>%  
@@ -635,29 +632,48 @@ map2
 
 saveWidget(map2, file = "map2.html", selfcontained = TRUE)
 
+
 ########################### map 3 ############################################
 
-map3<-leaflet()%>%addTiles(urlTemplate = "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")%>%setView(36.541, 31.410, zoom = 8) %>%  
-  
-  addPolygons(data=Amman_District1, color ='black', opacity=0.01, fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.01, weight=1.5, group="Amman") %>%
-  addPolygons(data=Irbid_District2, color ='black',opacity=0.05,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.05,  weight=1.5,group="Irbid") %>%
-  addPolygons(data=Balqa_District3, color ='black',opacity=0.05,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.05, weight=1.5, group="Balqa") %>%
-  addPolygons(data=Maan_District4, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Ma'an") %>%
-  addPolygons(data=Zarqa_District5, color ='black',opacity=0.08,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.08, weight=1.5, group="Zarqa") %>%
-  addPolygons(data=Karak_District6, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Karak") %>%
-  addPolygons(data=Madaba_District7, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Madaba") %>%
-  addPolygons(data=Aqaba_District8, color ='black',opacity=0.1,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.1,  weight=1.5,group="Aqaba") %>%
-  addPolygons(data=Tafiela_District9, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Tafiela") %>%
-  addPolygons(data=Ajlun_District10, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2,  weight=1.5,group="Ajlun") %>%
-  addPolygons(data=Mafraq_District11, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Mafraq") %>%
-  addPolygons(data=Jarash_District12, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Jarash") %>%
-  
-  addCircleMarkers(data=df2, radius= 1, color='red', opacity= 100, lng = ~Long, lat = ~Lat, popup=~pop1 )%>%
-  addCircleMarkers(data=df_area.points, radius= 1, color='black', opacity= 100, lng = ~Long, lat = ~Lat, popup = ~Address, label=~Address )
 
-for(i in 1:nrow(df2.conFINAL2)){
-  map3 <- addPolylines(map3, lat = as.numeric(df2.conFINAL2[i, c(4, 11)]), lng = as.numeric(df2.conFINAL2[i, c(5, 10)]),  weight=2)
+map3<-leaflet()%>%addTiles(urlTemplate = "http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png")%>%setView(36.541, 31.410, zoom = 7) %>%  
+  addCircleMarkers(data=CountTrans2,lng = ~Long, lat = ~Lat,  color ='black', fillColor=~pal2(CountTrans2$TransCount),   popup= paste('ATM Name: ', CountTrans2$ATMPlace, 
+                                                                                                                                      '</br> ATM Address: ', CountTrans2$Address,
+                                                                                                                                      '</br> District: ', CountTrans2$District,
+                                                                                                                                      '</br> ATM IP: ', CountTrans2$ATMIP,
+                                                                                                                                      '</br> Number of Transactions: ', CountTrans2$TransCount)  , fillOpacity=0.7, weight=0, radius=CountTrans2$TransCount/50 , labelOptions = labelOptions(noHide = T , direction='center', textOnly = T)) %>%
+  addLegend("bottomright", pal = pal2, values = CountTrans2$TransCount, bins=3,
+            title = "Number Of Transactions</br>per ATM",
+            labFormat = labelFormat(suffix = " Trans", digits=3),
+            opacity = 1)
+
+map3
+saveWidget(map3, file = "map3.html", selfcontained =TRUE)
+
+
+########################### map 4 ############################################
+
+
+#map4<-leaflet()%>%addTiles(urlTemplate = "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")%>%setView(36.541, 31.410, zoom = 8) %>%  
   
-}
-saveWidget(map3, file = "map1.html", selfcontained =TRUE)
+  #addPolygons(data=Amman_District1, color ='black', opacity=0.01, fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.01, weight=1.5, group="Amman") %>%
+  #addPolygons(data=Irbid_District2, color ='black',opacity=0.05,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.05,  weight=1.5,group="Irbid") %>%
+  #addPolygons(data=Balqa_District3, color ='black',opacity=0.05,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.05, weight=1.5, group="Balqa") %>%
+  #addPolygons(data=Maan_District4, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Ma'an") %>%
+  #addPolygons(data=Zarqa_District5, color ='black',opacity=0.08,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.08, weight=1.5, group="Zarqa") %>%
+  #addPolygons(data=Karak_District6, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Karak") %>%
+  #addPolygons(data=Madaba_District7, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Madaba") %>%
+  #addPolygons(data=Aqaba_District8, color ='black',opacity=0.1,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.1,  weight=1.5,group="Aqaba") %>%
+  #addPolygons(data=Tafiela_District9, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Tafiela") %>%
+  #addPolygons(data=Ajlun_District10, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2,  weight=1.5,group="Ajlun") %>%
+  #addPolygons(data=Mafraq_District11, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Mafraq") %>%
+  #addPolygons(data=Jarash_District12, color ='black',opacity=0.2,fillColor=~pal(Gov$x), label=~adm1_name, fillOpacity=0.2, weight=1.5, group="Jarash") %>%
+  
+  #addCircleMarkers(data=df2, radius= 1, color='red', opacity= 100, lng = ~Long, lat = ~Lat, popup=~pop1 )%>%
+  #addCircleMarkers(data=df_area.points, radius= 1, color='black', opacity= 100, lng = ~Long, lat = ~Lat, popup = ~Address, label=~Address )
+
+#for(i in 1:nrow(df2.conFINAL2)){
+#map4 <- addPolylines(map3, lat = as.numeric(df2.conFINAL2[i, c(4, 11)]), lng = as.numeric(df2.conFINAL2[i, c(5, 10)]),  weight=2)}
+
+#saveWidget(map4, file = "map4.html", selfcontained =TRUE)
 
