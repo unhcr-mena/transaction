@@ -54,5 +54,6 @@ library(plotly)
 library(webshot)
 library(colorspace)
 library(geosphere)
+library(sqldf)
 
 #install (http://phantomjs.org)

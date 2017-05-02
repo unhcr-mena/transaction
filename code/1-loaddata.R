@@ -18,7 +18,6 @@ df3<-read.csv("data/Transactions.CSV")
 shapearea <- st_read('data/admin1.shp')
 plot(shapearea) 
 shapearea2 <- st_read('data/admin2.shp')
-plot(shapearea2) 
 
 
 #setwd("D:/R/HTML")
@@ -28,7 +27,7 @@ plot(shapearea2)
 area.points <- fortify(shapearea)
 area.points2 <- fortify(shapearea2)
 
-colors <- brewer.pal(12,"Set3")
+#colors <- brewer.pal(12,"Set3")
 
 
 #rename colum to join tables
@@ -70,7 +69,7 @@ wgs84<-CRS("+proj=longlat +zone=37 +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0
 ####nearest ATM
 
 df.coords <- data.frame  (df$Lat, df$Long, df$Address)
-df.bc<-SpatialPointsDataFrame(data.frame(x=df.coords$df.Long,y =df.coords$df.Lat),data=data.frame(ID=1:108, address=df$Address), proj4string = wgs84)
+df.bc<-SpatialPointsDataFrame(data.frame(x=df.coords$df.Long,y =df.coords$df.Lat),data=data.frame(ID=1:108, Address=df$Address), proj4string = wgs84)
 df.bc.Proj<-spTransform(df.bc,utm10n)
 
 
@@ -117,4 +116,9 @@ d<-(round(A$actual_Distance,3)-round(A$Nearest_Dist,3))
 
 Gov <-(data.frame(aggregate(A$Nearest_Dist/1000, by=list(A$District), FUN=mean)))
 Gov$max  <-aggregate(A$Nearest_Dist, by=list(A$District), FUN=max)
+
+
+CountTrans1<- sqldf("SELECT LocalIP AS ATMIP, COUNT(DISTINCT TransNo) AS TransCount FROM A GROUP BY LocalIP")
+CountTrans2<-merge(CountTrans1, df, by = "ATMIP")
+
 
